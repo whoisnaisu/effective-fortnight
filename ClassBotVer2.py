@@ -15,28 +15,31 @@ class ClassBot:
         locations = np.where(result >= threshold)
         locations = list(zip(*locations[::-1]))
 
-        if locations:
-            height = self.temp_img.shape[0]
-            width = self.temp_img.shape[1]
+        height = self.temp_img.shape[0]
+        width = self.temp_img.shape[1]
 
-            for loc in locations:
-                bottomright = (loc[0] + width, loc[1] + height)
+        rectangles = []
 
+        for loc in locations:
+            rect = [int(loc[0]), int(loc[1]), width, height]
+            rectangles.append(rect)
+            rectangles.append(rect)
+
+        rectangles, _ = cv.groupRectangles(rectangles, groupThreshold=1, eps=0.5)
+
+        print(rectangles)
+
+        if len(rectangles):
+            for x, y, w, h in rectangles:
+                topleft = (x, y)
+                bottomright = (x + w, y + h)
                 cv.rectangle(
                     self.main_img,
-                    loc,
+                    topleft,
                     bottomright,
                     color=(100, 255, 11),
                     thickness=2,
                     lineType=cv.LINE_4,
-                )
-
-                font = cv.FONT_ITALIC
-                position = (loc[0], loc[1] + -5)
-                fontsize = 1
-                color = (100, 255, 11)
-                cv.putText(
-                    self.main_img, "Coin", position, font, fontsize, color, thickness=2
                 )
 
         cv.imshow("result", self.main_img)
