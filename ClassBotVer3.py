@@ -7,11 +7,10 @@ class ClassBot:
         self.main_img = cv.imread(main_img, cv.IMREAD_ANYCOLOR)
         self.temp_img = temp_img = cv.imread(temp_img, cv.IMREAD_ANYCOLOR)
 
-    def search(self):
+    def search(self, threshold=0.9, debug=False):
         result = cv.matchTemplate(self.main_img, self.temp_img, cv.TM_CCOEFF_NORMED)
         _, maxval, _, maxloc = cv.minMaxLoc(result)
 
-        threshold = 0.9
         locations = np.where(result >= threshold)
         locations = list(zip(*locations[::-1]))
 
@@ -31,34 +30,37 @@ class ClassBot:
             for x, y, w, h in rectangles:
                 topleft = (x, y)
                 bottomright = (x + w, y + h)
-                cv.rectangle(
-                    self.main_img,
-                    topleft,
-                    bottomright,
-                    color=(100, 255, 11),
-                    thickness=2,
-                    lineType=cv.LINE_4,
-                )
+
                 centerx = x + int(w / 2)
                 centery = y + int(h / 2)
 
                 point.append((centerx, centery))
 
-                cv.drawMarker(
-                    self.main_img,
-                    (centerx, centery),
-                    color=(100, 255, 11),
-                    markerSize=30,
-                    thickness=2,
-                    markerType=cv.MARKER_CROSS,
-                )
-
-        cv.imshow("result", self.main_img)
-        cv.waitKey()
-        cv.destroyAllWindows()
+                if debug:
+                    cv.rectangle(
+                        self.main_img,
+                        topleft,
+                        bottomright,
+                        color=(100, 255, 11),
+                        thickness=2,
+                        lineType=cv.LINE_4,
+                    )
+                    cv.drawMarker(
+                        self.main_img,
+                        (centerx, centery),
+                        color=(100, 255, 11),
+                        markerSize=30,
+                        thickness=2,
+                        markerType=cv.MARKER_CROSS,
+                    )
+        else:
+            print("No image found.")
+        if debug:
+            cv.imshow("result", self.main_img)
+            cv.waitKey()
+            cv.destroyAllWindows()
         return point
 
 
 myBot = ClassBot("images/coins.png", "images/coin.png")
-mypoint = myBot.search()
-print(mypoint)
+mypoint = myBot.search(debug=True)
